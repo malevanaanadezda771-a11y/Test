@@ -1,198 +1,174 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🏎️ TURBO RACE — Мультиплеер Гонки</title>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="src/styles/main.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Прятки в доме</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden; /* Prevent scrolling on mobile */
+        }
+        h1 { margin: 10px 0; font-size: 24px; text-align: center; }
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            max-width: 100vw;
+        }
+        canvas {
+            background-color: #eee;
+            display: block;
+            max-width: 100vw;
+            height: auto;
+            max-height: 80vh;
+        }
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #message {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff3333;
+            text-shadow: 2px 2px 4px #000;
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+        }
+        #timer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: black;
+            text-shadow: 1px 1px 2px white;
+        }
+        #info {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            font-size: 14px;
+            color: black;
+            text-shadow: 1px 1px 2px white;
+            background: rgba(255,255,255,0.7);
+            padding: 5px;
+            border-radius: 5px;
+            max-width: 300px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            pointer-events: auto;
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 5px;
+        }
+        
+        /* Mobile Controls */
+        #mobile-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+        .dpad {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto;
+        }
+        .dpad-row {
+            display: flex;
+        }
+        .mob-btn {
+            width: 50px;
+            height: 50px;
+            margin: 3px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid #555;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            touch-action: none;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .mob-btn:active { background: rgba(200, 200, 200, 0.9); }
+        .action-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(100, 150, 255, 0.7);
+            border: 2px solid #55a;
+            border-radius: 50%;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            line-height: 70px;
+            touch-action: none;
+            user-select: none;
+            pointer-events: auto;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+        .action-btn:active { background: rgba(50, 100, 255, 0.9); }
+        
+        @media (min-width: 900px) {
+            #mobile-controls { display: none; }
+        }
+    </style>
 </head>
 <body>
-
-<!-- ===================== SCREENS ===================== -->
-
-<!-- MAIN MENU -->
-<div id="screen-menu" class="screen active">
-  <div class="menu-bg">
-    <div class="road-anim">
-      <div class="road-line"></div><div class="road-line"></div>
-      <div class="road-line"></div><div class="road-line"></div>
-    </div>
-  </div>
-  <div class="menu-content">
-    <div class="logo">
-      <span class="logo-turbo">TURBO</span>
-      <span class="logo-race">RACE</span>
-    </div>
-    <div class="subtitle">🏆 Мультиплеер Гонки</div>
-
-    <div class="btn-group">
-      <button class="btn btn-primary" onclick="Game.showLevelSelect()">
-        🎮 Играть
-      </button>
-      <button class="btn btn-secondary" onclick="Game.showControls()">
-        ⌨️ Управление
-      </button>
-    </div>
-    <div class="menu-footer">
-      <div class="player-badge p1">👤 Игрок 1 — WASD</div>
-      <div class="player-badge p2">👤 Игрок 2 — ↑↓←→</div>
-    </div>
-  </div>
-</div>
-
-<!-- LEVEL SELECT -->
-<div id="screen-levels" class="screen">
-  <div class="level-select-header">
-    <button class="btn-back" onclick="Game.showMenu()">← Назад</button>
-    <h1>🗺️ Выбор Трассы</h1>
-  </div>
-  <div class="levels-grid">
-    <div class="level-card" onclick="Game.startLevel(1)">
-      <div class="level-preview level1-preview">
-        <svg viewBox="0 0 200 150" class="track-svg">
-          <path d="M30,75 Q30,20 100,20 Q170,20 170,75 Q170,130 100,130 Q30,130 30,75 Z"
-                fill="none" stroke="#888" stroke-width="22" opacity="0.4"/>
-          <path d="M30,75 Q30,20 100,20 Q170,20 170,75 Q170,130 100,130 Q30,130 30,75 Z"
-                fill="none" stroke="#f0c000" stroke-width="4" stroke-dasharray="10,8"/>
-        </svg>
-      </div>
-      <div class="level-info">
-        <div class="level-num">Уровень 1</div>
-        <div class="level-name">🌅 Солнечный Овал</div>
-        <div class="level-diff easy">⭐ Легко</div>
-        <div class="level-desc">Классическая овальная трасса — идеально для начинающих</div>
-      </div>
+    <h1>Прятки: Спрячься в доме!</h1>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="ui-layer">
+            <div id="timer">Ожидание...</div>
+            <div id="info">Управление: WASD / Стрелки. SPACE - спрятаться.</div>
+            <div id="message"></div>
+            <button id="restartBtn" style="display:none;" onclick="initGame()">Играть снова</button>
+        </div>
+        
+        <div id="mobile-controls">
+            <div class="dpad">
+                <div class="mob-btn" id="btn-up">↑</div>
+                <div class="dpad-row">
+                    <div class="mob-btn" id="btn-left">←</div>
+                    <div class="mob-btn" id="btn-down">↓</div>
+                    <div class="mob-btn" id="btn-right">→</div>
+                </div>
+            </div>
+            <div class="action-btn" id="btn-hide">Спрятаться</div>
+        </div>
     </div>
 
-    <div class="level-card" onclick="Game.startLevel(2)">
-      <div class="level-preview level2-preview">
-        <svg viewBox="0 0 200 150" class="track-svg">
-          <path d="M20,130 L20,40 Q20,20 40,20 L160,20 Q180,20 180,40
-                   L180,80 Q180,95 165,95 L80,95 Q65,95 65,110 L65,130 Z"
-                fill="none" stroke="#888" stroke-width="22" opacity="0.4"/>
-          <path d="M20,130 L20,40 Q20,20 40,20 L160,20 Q180,20 180,40
-                   L180,80 Q180,95 165,95 L80,95 Q65,95 65,110 L65,130 Z"
-                fill="none" stroke="#00cfff" stroke-width="4" stroke-dasharray="10,8"/>
-        </svg>
-      </div>
-      <div class="level-info">
-        <div class="level-num">Уровень 2</div>
-        <div class="level-name">🌃 Ночной Город</div>
-        <div class="level-diff medium">⭐⭐ Средне</div>
-        <div class="level-desc">Острые повороты городских улиц при свете неона</div>
-      </div>
-    </div>
-
-    <div class="level-card" onclick="Game.startLevel(3)">
-      <div class="level-preview level3-preview">
-        <svg viewBox="0 0 200 150" class="track-svg">
-          <path d="M100,20 L180,60 L160,130 L40,130 L20,60 Z"
-                fill="none" stroke="#888" stroke-width="22" opacity="0.4"/>
-          <path d="M100,20 L180,60 L160,130 L40,130 L20,60 Z"
-                fill="none" stroke="#ff4444" stroke-width="4" stroke-dasharray="10,8"/>
-        </svg>
-      </div>
-      <div class="level-info">
-        <div class="level-num">Уровень 3</div>
-        <div class="level-name">🌋 Горный Серпантин</div>
-        <div class="level-diff hard">⭐⭐⭐ Сложно</div>
-        <div class="level-desc">Экстремальная трасса с резкими поворотами и трамплинами</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- CONTROLS SCREEN -->
-<div id="screen-controls" class="screen">
-  <div class="level-select-header">
-    <button class="btn-back" onclick="Game.showMenu()">← Назад</button>
-    <h1>⌨️ Управление</h1>
-  </div>
-  <div class="controls-grid">
-    <div class="control-card p1-card">
-      <div class="player-title p1-title">🔵 Игрок 1</div>
-      <div class="key-row"><kbd>W</kbd> — Газ</div>
-      <div class="key-row"><kbd>S</kbd> — Тормоз</div>
-      <div class="key-row"><kbd>A</kbd> — Влево</div>
-      <div class="key-row"><kbd>D</kbd> — Вправо</div>
-    </div>
-    <div class="control-card p2-card">
-      <div class="player-title p2-title">🔴 Игрок 2</div>
-      <div class="key-row"><kbd>↑</kbd> — Газ</div>
-      <div class="key-row"><kbd>↓</kbd> — Тормоз</div>
-      <div class="key-row"><kbd>←</kbd> — Влево</div>
-      <div class="key-row"><kbd>→</kbd> — Вправо</div>
-    </div>
-  </div>
-  <div class="control-tips">
-    <div class="tip">💨 Удерживайте газ для набора скорости</div>
-    <div class="tip">🏁 Проедьте <strong>3 круга</strong> быстрее соперника</div>
-    <div class="tip">⚠️ Съезд с трассы замедляет машину</div>
-  </div>
-</div>
-
-<!-- GAME SCREEN -->
-<div id="screen-game" class="screen">
-  <div class="game-hud">
-    <div class="hud-player hud-p1">
-      <div class="hud-name">🔵 Игрок 1</div>
-      <div class="hud-speed">Speed: <span id="p1-speed">0</span> km/h</div>
-      <div class="hud-lap">Круг: <span id="p1-lap">1</span>/3</div>
-      <div class="hud-pos">Позиция: <span id="p1-pos">1</span></div>
-    </div>
-    <div class="hud-center">
-      <div class="hud-level-name" id="hud-level-name">Трасса</div>
-      <div class="hud-timer" id="hud-timer">00:00</div>
-      <div class="hud-laps-label">⏱ Время</div>
-    </div>
-    <div class="hud-player hud-p2">
-      <div class="hud-name">🔴 Игрок 2</div>
-      <div class="hud-speed">Speed: <span id="p2-speed">0</span> km/h</div>
-      <div class="hud-lap">Круг: <span id="p2-lap">1</span>/3</div>
-      <div class="hud-pos">Позиция: <span id="p2-pos">2</span></div>
-    </div>
-  </div>
-  <canvas id="gameCanvas"></canvas>
-  <div class="game-footer">
-    <button class="btn-pause" onclick="Game.togglePause()">⏸ Пауза</button>
-    <button class="btn-pause" onclick="Game.exitToMenu()">🏠 Меню</button>
-  </div>
-</div>
-
-<!-- COUNTDOWN -->
-<div id="countdown-overlay" class="overlay hidden">
-  <div class="countdown-box">
-    <div id="countdown-text" class="countdown-text">3</div>
-  </div>
-</div>
-
-<!-- PAUSE -->
-<div id="pause-overlay" class="overlay hidden">
-  <div class="pause-box">
-    <h2>⏸ Пауза</h2>
-    <button class="btn btn-primary" onclick="Game.togglePause()">▶ Продолжить</button>
-    <button class="btn btn-secondary" onclick="Game.exitToMenu()">🏠 Меню</button>
-  </div>
-</div>
-
-<!-- FINISH SCREEN -->
-<div id="finish-overlay" class="overlay hidden">
-  <div class="finish-box">
-    <div class="finish-trophy" id="finish-trophy">🏆</div>
-    <h1 class="finish-title" id="finish-title">Победитель!</h1>
-    <div class="finish-winner" id="finish-winner">Игрок 1</div>
-    <div class="finish-stats" id="finish-stats"></div>
-    <div class="finish-buttons">
-      <button class="btn btn-primary" onclick="Game.restartLevel()">🔄 Ещё раз</button>
-      <button class="btn btn-secondary" onclick="Game.showLevelSelect()">🗺️ Трассы</button>
-      <button class="btn btn-secondary" onclick="Game.showMenu()">🏠 Меню</button>
-    </div>
-  </div>
-</div>
-
-<script src="src/js/tracks.js"></script>
-<script src="src/js/car.js"></script>
-<script src="src/js/game.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
